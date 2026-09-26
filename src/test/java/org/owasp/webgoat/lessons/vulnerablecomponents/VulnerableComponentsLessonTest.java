@@ -5,14 +5,12 @@
 package org.owasp.webgoat.lessons.vulnerablecomponents;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.StreamException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.owasp.webgoat.container.assignments.AttackResult;
 
 public class VulnerableComponentsLessonTest {
+
+  private final VulnerableComponentsLesson lesson = new VulnerableComponentsLesson();
 
   String strangeContact =
       "<contact class='dynamic-proxy'>\n"
@@ -30,41 +28,23 @@ public class VulnerableComponentsLessonTest {
 
   @Test
   public void testTransformation() throws Exception {
-    XStream xstream = new XStream();
-    xstream.setClassLoader(Contact.class.getClassLoader());
-    xstream.alias("contact", ContactImpl.class);
-    xstream.ignoreUnknownElements();
-    assertThat(xstream.fromXML(contact)).isNotNull();
+    AttackResult result = lesson.completed(contact);
+
+    assertThat(result.assignmentSolved()).isFalse();
   }
 
   @Test
   public void testIllegalTransformation() throws Exception {
-    XStream xstream = new XStream();
-    xstream.setClassLoader(Contact.class.getClassLoader());
-    xstream.alias("contact", ContactImpl.class);
-    xstream.ignoreUnknownElements();
-    try {
-      ((Contact) xstream.fromXML(strangeContact)).getFirstName();
-    } catch (Throwable t) {
-      Throwable c = t;
-      int i = 0;
-      while (c != null && i < 10) {
-        System.out.println("CHAIN[" + i + "] " + c.getClass().getName() + " :: " + c.getMessage());
-        c = c.getCause();
-        i++;
-      }
-    }
+    AttackResult result = lesson.completed(strangeContact);
+
+    assertThat(result.assignmentSolved()).isTrue();
   }
 
   @Test
   public void testIllegalPayload() throws Exception {
-    XStream xstream = new XStream();
-    xstream.setClassLoader(Contact.class.getClassLoader());
-    xstream.alias("contact", ContactImpl.class);
-    xstream.ignoreUnknownElements();
-    Exception e =
-        assertThrows(
-            StreamException.class, () -> ((Contact) xstream.fromXML("bullssjfs")).getFirstName());
-    assertThat(e.getCause().getMessage().contains("START_DOCUMENT")).isTrue();
+    AttackResult result = lesson.completed("bullssjfs");
+
+    assertThat(result.assignmentSolved()).isFalse();
+    assertThat(result.getOutput()).isNotBlank();
   }
 }
