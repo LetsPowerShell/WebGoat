@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -69,6 +70,8 @@ public class VulnerableComponentsLesson implements AssignmentEndpoint {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
     factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+    factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
     factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
     factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
     factory.setExpandEntityReferences(false);
@@ -106,7 +109,11 @@ public class VulnerableComponentsLesson implements AssignmentEndpoint {
   }
 
   private String getElementValue(Element root, String tagName) {
-    Element child = (Element) root.getElementsByTagName(tagName).item(0);
-    return child == null ? null : child.getTextContent();
+    for (Node child = root.getFirstChild(); child != null; child = child.getNextSibling()) {
+      if (child.getNodeType() == Node.ELEMENT_NODE && tagName.equals(child.getNodeName())) {
+        return child.getTextContent();
+      }
+    }
+    return null;
   }
 }
