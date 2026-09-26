@@ -32,6 +32,12 @@ import org.xml.sax.helpers.DefaultHandler;
 public class VulnerableComponentsLesson implements AssignmentEndpoint {
 
   private static final String CONTACT_ELEMENT = "contact";
+  private static final String DYNAMIC_PROXY_MARKER = "dynamic-proxy";
+  private static final String EVENT_HANDLER_MARKER = "java.beans.EventHandler";
+  private static final String PROCESS_BUILDER_MARKER = "java.lang.ProcessBuilder";
+  private static final String CONTACT_INTERFACE_MARKER =
+      "org.owasp.webgoat.lessons.vulnerablecomponents.Contact";
+  private static final String START_ACTION_MARKER = "<action>start</action>";
 
   @PostMapping("/VulnerableComponents/attack1")
   public @ResponseBody AttackResult completed(@RequestParam String payload) {
@@ -59,11 +65,11 @@ public class VulnerableComponentsLesson implements AssignmentEndpoint {
   }
 
   private boolean isExploitPayload(String payload) {
-    return StringUtils.contains(payload, "dynamic-proxy")
-        && StringUtils.contains(payload, "java.beans.EventHandler")
-        && StringUtils.contains(payload, "java.lang.ProcessBuilder")
-        && StringUtils.contains(payload, "org.owasp.webgoat.lessons.vulnerablecomponents.Contact")
-        && StringUtils.contains(payload, "<action>start</action>");
+    return StringUtils.contains(payload, DYNAMIC_PROXY_MARKER)
+        && StringUtils.contains(payload, EVENT_HANDLER_MARKER)
+        && StringUtils.contains(payload, PROCESS_BUILDER_MARKER)
+        && StringUtils.contains(payload, CONTACT_INTERFACE_MARKER)
+        && StringUtils.contains(payload, START_ACTION_MARKER);
   }
 
   private Contact parseContact(String payload) throws Exception {
